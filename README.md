@@ -7,7 +7,7 @@ To learn more about Rapid7 Nexpose, please visit: [official website](https://www
 
 Check out the integration in action:
 
-![nexpose](https://user-images.githubusercontent.com/22529325/61380635-be5f4500-a877-11e9-939b-98bfa9235de2.gif)
+![nexposeNew](https://user-images.githubusercontent.com/22529325/61459725-5eca6d80-a93b-11e9-8046-d781e0e9194d.gif)
 
 
 ## Rapid7 Nexpose Integration Options

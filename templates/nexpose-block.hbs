@@ -1,7 +1,7 @@
 <div>
     {{#if details.__isAsset}}
     <div>
-        <a class="p-link" href="{{selfLink}}">View in Rapid7 Nexpose</a>
+        <a class="p-link" href="https://18.206.174.30:3780/asset.jsp?devid={{details.id}}">View in Rapid7 Nexpose</a>
 
         <h1 class="p-title">Asset</h1>
         <div>
@@ -12,6 +12,18 @@
             <span class="p-key">Risk Score: </span>
             <span class="p-value">{{details.riskScore}}</span>
         </div>
+
+        {{#if details.osFingerprint.cpe}}
+        <div>
+            <span class="p-key">CPE: </span>
+            <span class="p-value">{{details.osFingerprint.cpe.product}}</span>
+        </div>
+
+        <div>
+            <span class="p-key">CPE Vendor: </span>
+            <span class="p-value">{{details.osFingerprint.cpe.vendor}}</span>
+        </div>
+        {{/if}}
 
         {{#if details.assessedForPolicies}}
         <div>
@@ -68,37 +80,44 @@
         {{#each details.history as |history|}}
         <div>
             <span class="p-value">{{history.type}}</span>
-
+        </div>
+        <div>
             <span class="p-key">Version: </span>
             <span class="p-value">{{history.version}}</span>
-
+        </div>
+        <div>
             <span class="p-key">Scan ID: </span>
             <span class="p-value">{{history.scanId}}</span>
-
+        </div>
+        <div>
             <span class="p-key">Date: </span>
             <span class="p-value">{{history.date}}</span>
         </div>
         {{/each}}
 
         <div>
-            <h1 class="p-title">Apply Tag</h1>
+            <h1 class="p-title">Nexpose Tags</h1>
 
-            <select size=2 onchange={{action 'onSelectTag' value="target.value"}}>
-                {{#each details.availableTags as |tag|}}
-                <option value="{{tag.id}}">{{tag.name}}</option>
-                {{/each}}
-            </select>
-
-            <button {{action "applyTag" details.id}} class="btn btn-primary btn-apply">
-                Apply Tag
-            </button>
-            <div>
+            <div class="nexpose-tags">
                 {{#each details.appliedTags as |tag|}}
                 <div>
-                    <span class="p-value">Current Tag: {{tag.name}}</span>
+                    <span class="nexpose-tags"> {{tag.type}} - <b>{{tag.name}}</b> </span>
                 </div>
                 {{/each}}
             </div>
+            <div>
+            <select size=2 onchange={{action 'onSelectTag' value="target.value"}}>
+                {{#each details.availableTags as |tag|}}
+                <option value="{{tag.id}}">{{tag.type}} - {{tag.name}}: {{tag.riskModifier}}</option>
+                {{/each}}
+            </select>
+          </div>
+
+            <div class="nexpose-button">
+            <button {{action "applyTag" details.id}} class="btn btn-primary btn-apply">
+                Change Tag
+            </button>
+          </div>
         </div>
     </div>
     {{/if}}
