@@ -54,7 +54,7 @@ function lookupIPs(entities, options, callback) {
         }
 
         let resourcesByIP = {};
-
+        Logger.trace({body: body}, "Logging data");
         body.resources.forEach(resource => {
             resourcesByIP[resource.ip] = resource;
         });
@@ -69,10 +69,11 @@ function lookupIPs(entities, options, callback) {
                     entity: entity,
                     data: {
                         summary: [
-                            `Critical: ${resource.vulnerabilities.critical}`,
-                            `Severe: ${resource.vulnerabilities.severe}`,
+                            `Critical Vulns: ${resource.vulnerabilities.critical}`,
                             `Exploits: ${resource.vulnerabilities.exploits}`,
-                            `Services: ${resource.services.reduce((prev, next) => prev + ', ' + next.name, '')}`
+                            `Operating System: ${resource.osFingerprint.description}`,
+                            `Assesed for Vulns: ${resource.assessedForVulnerabilities}`,
+                            `Assesed for Policies: ${resource.assessedForPolicies}`
                         ],
                         details: resource
                     }
@@ -295,10 +296,10 @@ function cleanupReport(options, reportLink, cb) {
 }
 /*
 // This function validates that a CVE exists before trying to look it up
-// Because the CVE standard was created in 1999, we know that any CVE with 
-// a year entry of 1998 or earlier will not exist.  Likewise, a CVE with a 
-// date later than the current year will also not exist (we check current year 
-// + 1 to account for any date time or overlap issues).  We can safely 
+// Because the CVE standard was created in 1999, we know that any CVE with
+// a year entry of 1998 or earlier will not exist.  Likewise, a CVE with a
+// date later than the current year will also not exist (we check current year
+// + 1 to account for any date time or overlap issues).  We can safely
 // discard these results as erroneous parsing of the screen text.
 function nonexistantCVE(entity) {
     let cve = entity.value;
@@ -359,7 +360,7 @@ function onDetails(entity, options, callback) {
             }
 
             entity.data.details.appliedTags = body.resources;
-
+            Logger.trace({tagData: entity.data}, "TagData");
             callback(null, entity.data);
         });
     });
@@ -450,7 +451,7 @@ function onMessage(payload, options, callback) {
         ro.url = `${options.url}/api/3/scans/${payload.scanId}`;
 
         requestWithDefaults(ro, 200, (err, scan) => {
-            
+
         });
     } else {
         console.error('invalid message');

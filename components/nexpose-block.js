@@ -2,11 +2,7 @@ let tagId = 2; // high is the first tag in the list, so we let it default
 
 polarity.export = PolarityComponent.extend({
     details: Ember.computed.alias('block.data.details'),
-    selfLink: Ember.computed('block.data.details', function () {
-        return this.get('block.data.details').links.filter(function (link) {
-            return link.rel === 'self';
-        }).pop();
-    }),
+    
     tagsLink: Ember.computed('block.data.details', function () {
         return this.get('block.data.details').links.filter(function (link) {
             return link.rel === 'Tags';
@@ -20,7 +16,7 @@ polarity.export = PolarityComponent.extend({
             this.sendIntegrationMessage({ type: 'applyTag', assetId: assetId, tagId: tagId, tagsLink: tagsLink.href })
                 .then((tags) => {
                     console.log('tag successfully added', tags);
-                    
+
                     let details = self.get('block.data.details')
                     details.appliedTags = tags;
 
