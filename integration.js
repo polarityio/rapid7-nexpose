@@ -1,112 +1,124 @@
-let async = require('async');
-let config = require('./config/config');
-let request = require('request');
+const async = require('async');
+const config = require('./config/config');
+const request = require('request');
 
 let Logger;
 let requestWithDefaults;
-let requestOptions = {};
 
 function handleRequestError(request) {
-    return (options, expectedStatusCode, callback) => {
-        return request(options, (err, resp, body) => {
-            if (err || resp.statusCode !== expectedStatusCode) {
-                Logger.error(`error during http request to ${options.url}`, { error: err, status: resp ? resp.statusCode : 'unknown' });
-                callback({ error: err, statusCode: resp ? resp.statusCode : 'unknown' });
-            } else {
-                callback(null, body);
-            }
+  return (options, expectedStatusCode, callback) => {
+    return request(options, (err, resp, body) => {
+      if (err || resp.statusCode !== expectedStatusCode) {
+        Logger.error(
+          {
+            error: err,
+            status: resp ? resp.statusCode : 'unknown'
+          },
+          `error during HTTP request to ${options.url}`
+        );
+        callback({
+          detail: err.code ? err.code : 'Error attempting HTTP request',
+          error: err,
+          statusCode: resp ? resp.statusCode : 'unknown'
         });
-    };
+      } else {
+        callback(null, body);
+      }
+    });
+  };
 }
 
 function lookupIPs(entities, options, callback) {
-    let requestBody = {
-        filters: entities
-            .filter(entity => entity.isIP)
-            .map(entity => {
-                return {
-                    field: "ip-address",
-                    operator: "is",
-                    value: entity.value
-                };
-            }),
-        match: "any"
-    };
+  let requestBody = {
+    filters: entities.filter((entity) => entity.isIP).map((entity) => {
+      return {
+        field: 'ip-address',
+        operator: 'is',
+        value: entity.value
+      };
+    }),
+    match: 'any'
+  };
 
-    let ro = {
-        url: `${options.url}/api/3/assets/search`,
-        method: 'POST',
-        auth: {
-            user: options.username,
-            password: options.password
-        },
-        body: requestBody,
-        json: true
-    };
+  let ro = {
+    url: `${options.url}/api/3/assets/search`,
+    method: 'POST',
+    auth: {
+      user: options.username,
+      password: options.password
+    },
+    body: requestBody,
+    json: true
+  };
 
-    Logger.trace('request options are: ', ro);
+  Logger.trace('request options are: ', ro);
 
-    requestWithDefaults(ro, 200, (err, body) => {
-        if (err) {
-            Logger.error('error during lookup', err);
-            callback(null, err);
-            return;
+  requestWithDefaults(ro, 200, (err, body) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+
+    let resourcesByIP = {};
+    Logger.trace({ body: body }, 'Logging data');
+    body.resources.forEach((resource) => {
+      resourcesByIP[resource.ip] = resource;
+    });
+
+    let results = [];
+
+    entities.forEach((entity) => {
+      let resource = resourcesByIP[entity.value];
+      if (!!resource) {
+        resource.__isAsset = true;
+        Logger.trace({ resource: resource }, 'Checking data before it gets passed');
+        let critical,
+          exploits,
+          description,
+          vulns,
+          policies = 'NA';
+
+        if (typeof resource.vulnerabilities.critical !== 'undefined') {
+          critical = resource.vulnerabilities.critical;
+        }
+        if (typeof resource.vulnerabilities.exploits !== 'undefined') {
+          exploits = resource.vulnerabilities.exploits;
+        }
+        if (typeof resource.osFingerprint !== 'undefined') {
+          description = resource.osFingerprint.description;
+        } else {
+          description = 'No Operating System Provided';
+        }
+        if (typeof resource.assessedForVulnerabilities !== 'undefined') {
+          vulns = resource.assessedForVulnerabilities;
+        }
+        if (typeof resource.assessedForPolicies !== 'undefined') {
+          policies = resource.assessedForPolicies;
         }
 
-        let resourcesByIP = {};
-        Logger.trace({body: body}, "Logging data");
-        body.resources.forEach(resource => {
-            resourcesByIP[resource.ip] = resource;
+        results.push({
+          entity: entity,
+          data: {
+            summary: [
+              `Critical Vulns: ${critical}`,
+              `Exploits: ${exploits}`,
+              `Operating System: ${description}`,
+              `Assessed for Vulns: ${vulns}`,
+              `Assessed for Policies: ${policies}`
+            ],
+            details: resource
+          }
         });
-
-        let results = [];
-
-        entities.forEach(entity => {
-            let resource = resourcesByIP[entity.value];
-            if (!!resource) {
-                resource.__isAsset = true;
-                Logger.trace({resource: resource}, "Checking data before it gets passed");
-                if(typeof resource.vulnerabilities.critical !== "undefined") {
-                  var critical = resource.vulnerabilities.critical
-                }
-                if(typeof resource.vulnerabilities.exploits !== "undefined") {
-                  var exploits = resource.vulnerabilities.exploits
-                }
-                if(typeof resource.osFingerprint !== "undefined" ) {
-                  var description = resource.osFingerprint.description
-                } else {
-                  description = "No Operating System Provided"
-                }
-                if(typeof resource.assessedForVulnerabilities !== "undefined") {
-                  var vulns = resource.assessedForVulnerabilities
-                }
-                if(typeof resource.assessedForPolicies !== "undefined") {
-                  var policies = resource.assessedForPolicies
-                }
-
-                results.push({
-                    entity: entity,
-                    data: {
-                        summary: [
-                            "Critical Vulns: " + critical,
-                            `Exploits: ` + exploits,
-                            `Operating System: ` + description,
-                            `Assesed for Vulns: ` + vulns,
-                            `Assesed for Policies: ` + policies
-                        ],
-                        details: resource
-                    }
-                });
-            } else {
-                results.push({
-                    entity: entity,
-                    data: null
-                });
-            }
+      } else {
+        results.push({
+          entity: entity,
+          data: null
         });
-
-        callback(null, results);
+      }
     });
+
+    callback(null, results);
+  });
 }
 /*
 function pollForCompletedReport(iteration, reportUrl, options, callback) {
@@ -328,169 +340,173 @@ function nonexistantCVE(entity) {
 }
 */
 function doLookup(entities, options, callback) {
-    Logger.trace('options are', options);
+  Logger.trace('options are', options);
 
-    let results = [];
+  let results = [];
 
-    async.parallel([
-        (done) => {
-            lookupIPs(entities.filter(entity => entity.isIP), options, (err, _results) => {
-                results = results.concat(_results);
-                done(err);
-            });
-        }/*,
+  async.parallel(
+    [
+      (done) => {
+        lookupIPs(entities.filter((entity) => entity.isIP), options, (err, _results) => {
+          results = results.concat(_results);
+          done(err);
+        });
+      } /*,
         (done) => {
             lookupCVEs(entities.filter(entity => entity.types.indexOf('custom.cve') !== -1), options, (err, _results) => {
                 results = results.concat(_results);
                 done(err);
             });
         }*/
-    ], err => {
-        callback(err, results);
-    });
+    ],
+    (err) => {
+      callback(err, results);
+    }
+  );
 }
 
 function onDetails(entity, options, callback) {
-    let ro = {
-        url: `${options.url}/api/3/tags`,
-        auth: {
-            user: options.username,
-            password: options.password
-        },
-        json: true
-    };
+  let ro = {
+    url: `${options.url}/api/3/tags`,
+    auth: {
+      user: options.username,
+      password: options.password
+    },
+    json: true
+  };
 
-    Logger.trace('request options are: ', ro);
+  Logger.trace('request options are: ', ro);
+
+  requestWithDefaults(ro, 200, (err, body) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+
+    entity.data.details.availableTags = body.resources;
+
+    ro.url = `${options.url}/api/3/assets/${entity.data.details.id}/tags`;
 
     requestWithDefaults(ro, 200, (err, body) => {
-        if (err) {
-            callback(err);
-            return;
-        }
+      if (err) {
+        callback(err);
+        return;
+      }
 
-        entity.data.details.availableTags = body.resources;
-
-        ro.url = `${options.url}/api/3/assets/${entity.data.details.id}/tags`;
-
-        requestWithDefaults(ro, 200, (err, body) => {
-            if (err) {
-                callback(err);
-                return;
-            }
-
-            entity.data.details.appliedTags = body.resources;
-            Logger.trace({tagData: entity.data}, "TagData");
-            callback(null, entity.data);
-        });
+      entity.data.details.appliedTags = body.resources;
+      Logger.trace({ tagData: entity.data }, 'TagData');
+      callback(null, entity.data);
     });
+  });
 }
 
 function startup(logger) {
-    Logger = logger;
+  Logger = logger;
+  let requestOptions = {};
 
-    if (typeof config.request.cert === 'string' && config.request.cert.length > 0) {
-        requestOptions.cert = fs.readFileSync(config.request.cert);
-    }
+  if (typeof config.request.cert === 'string' && config.request.cert.length > 0) {
+    requestOptions.cert = fs.readFileSync(config.request.cert);
+  }
 
-    if (typeof config.request.key === 'string' && config.request.key.length > 0) {
-        requestOptions.key = fs.readFileSync(config.request.key);
-    }
+  if (typeof config.request.key === 'string' && config.request.key.length > 0) {
+    requestOptions.key = fs.readFileSync(config.request.key);
+  }
 
-    if (typeof config.request.passphrase === 'string' && config.request.passphrase.length > 0) {
-        requestOptions.passphrase = config.request.passphrase;
-    }
+  if (typeof config.request.passphrase === 'string' && config.request.passphrase.length > 0) {
+    requestOptions.passphrase = config.request.passphrase;
+  }
 
-    if (typeof config.request.ca === 'string' && config.request.ca.length > 0) {
-        requestOptions.ca = fs.readFileSync(config.request.ca);
-    }
+  if (typeof config.request.ca === 'string' && config.request.ca.length > 0) {
+    requestOptions.ca = fs.readFileSync(config.request.ca);
+  }
 
-    if (typeof config.request.proxy === 'string' && config.request.proxy.length > 0) {
-        requestOptions.proxy = config.request.proxy;
-    }
+  if (typeof config.request.proxy === 'string' && config.request.proxy.length > 0) {
+    requestOptions.proxy = config.request.proxy;
+  }
 
-    if (typeof config.request.rejectUnauthorized === 'boolean') {
-        requestOptions.rejectUnauthorized = config.request.rejectUnauthorized;
-    }
+  if (typeof config.request.rejectUnauthorized === 'boolean') {
+    requestOptions.rejectUnauthorized = config.request.rejectUnauthorized;
+  }
 
-    requestOptions.json = true;
+  requestOptions.json = true;
 
-    requestWithDefaults = handleRequestError(request.defaults(requestOptions));
+  requestWithDefaults = handleRequestError(request.defaults(requestOptions));
 }
 
 function validateStringOption(errors, options, optionName, errMessage) {
-    if (typeof options[optionName].value !== 'string' ||
-        (typeof options[optionName].value === 'string' && options[optionName].value.length === 0)) {
-        errors.push({
-            key: optionName,
-            message: errMessage
-        });
-    }
+  if (
+    typeof options[optionName].value !== 'string' ||
+    (typeof options[optionName].value === 'string' && options[optionName].value.length === 0)
+  ) {
+    errors.push({
+      key: optionName,
+      message: errMessage
+    });
+  }
 }
 
 function onMessage(payload, options, callback) {
-    Logger.trace('onMessage invoked with payload ' + JSON.stringify(payload));
+  Logger.trace('onMessage invoked with payload ' + JSON.stringify(payload));
 
-    let ro = {
-        json: true,
-        auth: {
-            user: options.username,
-            password: options.password
+  let ro = {
+    json: true,
+    auth: {
+      user: options.username,
+      password: options.password
+    }
+  };
+  if (payload.type === 'applyTag') {
+    ro.url = `${options.url}/api/3/tags/${payload.tagId}/assets/${payload.assetId}`;
+    ro.method = 'PUT';
+
+    Logger.trace('request options are: ', ro);
+
+    requestWithDefaults(ro, 200, (err) => {
+      if (err) {
+        Logger.error('error applying tag ', err);
+        callback(err);
+        return;
+      }
+
+      ro.url = payload.tagsLink;
+      ro.method = 'GET';
+
+      requestWithDefaults(ro, 200, (err, tags) => {
+        if (err) {
+          Logger.error('error fetching all tags', err);
+          callback(err);
+          return;
         }
-    }
-    if (payload.type === 'applyTag') {
-        ro.url = `${options.url}/api/3/tags/${payload.tagId}/assets/${payload.assetId}`;
-        ro.method = 'PUT';
 
-        Logger.trace('request options are: ', ro);
+        Logger.trace('successfully re-fetched tags');
 
-        requestWithDefaults(ro, 200, (err) => {
-            if (err) {
-                Logger.error('error applying tag ', err);
-                callback(err);
-                return;
-            }
+        callback(null, tags.resources);
+      });
+    });
+  } else if (payload.type === 'rescanSite') {
+    ro.method = 'GET';
+    ro.url = `${options.url}/api/3/scans/${payload.scanId}`;
 
-            ro.url = payload.tagsLink;
-            ro.method = 'GET';
-
-            requestWithDefaults(ro, 200, (err, tags) => {
-                if (err) {
-                    Logger.error('error fetching all tags', err);
-                    callback(err);
-                    return;
-                }
-
-                Logger.trace('successfully re-fetched tags');
-
-                callback(null, tags.resources);
-            });
-        });
-    } else if (payload.type === 'rescanSite') {
-        ro.method = 'GET';
-        ro.url = `${options.url}/api/3/scans/${payload.scanId}`;
-
-        requestWithDefaults(ro, 200, (err, scan) => {
-
-        });
-    } else {
-        console.error('invalid message');
-    }
+    requestWithDefaults(ro, 200, (err, scan) => {});
+  } else {
+    console.error('invalid message');
+  }
 }
 
 function validateOptions(options, callback) {
-    let errors = [];
+  let errors = [];
 
-    validateStringOption(errors, options, 'url', 'You must provide a url.');
-    validateStringOption(errors, options, 'username', 'You must provide a username.');
-    validateStringOption(errors, options, 'password', 'You must provide a password. ');
+  validateStringOption(errors, options, 'url', 'You must provide a url.');
+  validateStringOption(errors, options, 'username', 'You must provide a username.');
+  validateStringOption(errors, options, 'password', 'You must provide a password. ');
 
-    callback(null, errors);
+  callback(null, errors);
 }
 
 module.exports = {
-    doLookup: doLookup,
-    onDetails: onDetails,
-    onMessage: onMessage,
-    startup: startup,
-    validateOptions: validateOptions
+  doLookup: doLookup,
+  onDetails: onDetails,
+  onMessage: onMessage,
+  startup: startup,
+  validateOptions: validateOptions
 };
