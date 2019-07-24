@@ -5,7 +5,7 @@
   "private": true,
   "author": "Polarity",
   "dependencies": {
-    "request": "^2.75",
-    "async": "^2.1.4"
+    "request": "^2.88",
+    "async": "^3.1"
   }
 }
