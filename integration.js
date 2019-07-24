@@ -7,16 +7,26 @@ let requestWithDefaults;
 let requestOptions = {};
 
 function handleRequestError(request) {
-    return (options, expectedStatusCode, callback) => {
-        return request(options, (err, resp, body) => {
-            if (err || resp.statusCode !== expectedStatusCode) {
-                Logger.error(`error during http request to ${options.url}`, { error: err, status: resp ? resp.statusCode : 'unknown' });
-                callback({ error: err, statusCode: resp ? resp.statusCode : 'unknown' });
-            } else {
-                callback(null, body);
-            }
+  return (options, expectedStatusCode, callback) => {
+    return request(options, (err, resp, body) => {
+      if (err || resp.statusCode !== expectedStatusCode) {
+        Logger.error(
+          {
+            error: err,
+            status: resp ? resp.statusCode : 'unknown'
+          },
+          `error during HTTP request to ${options.url}`
+        );
+        callback({
+          detail: err.code ? err.code : 'Error attempting HTTP request',
+          error: err,
+          statusCode: resp ? resp.statusCode : 'unknown'
         });
-    };
+      } else {
+        callback(null, body);
+      }
+    });
+  };
 }
 
 function lookupIPs(entities, options, callback) {
