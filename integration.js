@@ -65,15 +65,34 @@ function lookupIPs(entities, options, callback) {
             let resource = resourcesByIP[entity.value];
             if (!!resource) {
                 resource.__isAsset = true;
+                Logger.trace({resource: resource}, "Checking data before it gets passed");
+                if(typeof resource.vulnerabilities.critical !== "undefined") {
+                  var critical = resource.vulnerabilities.critical
+                }
+                if(typeof resource.vulnerabilities.exploits !== "undefined") {
+                  var exploits = resource.vulnerabilities.exploits
+                }
+                if(typeof resource.osFingerprint !== "undefined" ) {
+                  var description = resource.osFingerprint.description
+                } else {
+                  description = "No Operating System Provided"
+                }
+                if(typeof resource.assessedForVulnerabilities !== "undefined") {
+                  var vulns = resource.assessedForVulnerabilities
+                }
+                if(typeof resource.assessedForPolicies !== "undefined") {
+                  var policies = resource.assessedForPolicies
+                }
+
                 results.push({
                     entity: entity,
                     data: {
                         summary: [
-                            `Critical Vulns: ${resource.vulnerabilities.critical}`,
-                            `Exploits: ${resource.vulnerabilities.exploits}`,
-                            `Operating System: ${resource.osFingerprint.description}`,
-                            `Assesed for Vulns: ${resource.assessedForVulnerabilities}`,
-                            `Assesed for Policies: ${resource.assessedForPolicies}`
+                            "Critical Vulns: " + critical,
+                            `Exploits: ` + exploits,
+                            `Operating System: ` + description,
+                            `Assesed for Vulns: ` + vulns,
+                            `Assesed for Policies: ` + policies
                         ],
                         details: resource
                     }
