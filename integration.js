@@ -1,10 +1,9 @@
-let async = require('async');
-let config = require('./config/config');
-let request = require('request');
+const async = require('async');
+const config = require('./config/config');
+const request = require('request');
 
 let Logger;
 let requestWithDefaults;
-let requestOptions = {};
 
 function handleRequestError(request) {
   return (options, expectedStatusCode, callback) => {
@@ -341,169 +340,173 @@ function nonexistantCVE(entity) {
 }
 */
 function doLookup(entities, options, callback) {
-    Logger.trace('options are', options);
+  Logger.trace('options are', options);
 
-    let results = [];
+  let results = [];
 
-    async.parallel([
-        (done) => {
-            lookupIPs(entities.filter(entity => entity.isIP), options, (err, _results) => {
-                results = results.concat(_results);
-                done(err);
-            });
-        }/*,
+  async.parallel(
+    [
+      (done) => {
+        lookupIPs(entities.filter((entity) => entity.isIP), options, (err, _results) => {
+          results = results.concat(_results);
+          done(err);
+        });
+      } /*,
         (done) => {
             lookupCVEs(entities.filter(entity => entity.types.indexOf('custom.cve') !== -1), options, (err, _results) => {
                 results = results.concat(_results);
                 done(err);
             });
         }*/
-    ], err => {
-        callback(err, results);
-    });
+    ],
+    (err) => {
+      callback(err, results);
+    }
+  );
 }
 
 function onDetails(entity, options, callback) {
-    let ro = {
-        url: `${options.url}/api/3/tags`,
-        auth: {
-            user: options.username,
-            password: options.password
-        },
-        json: true
-    };
+  let ro = {
+    url: `${options.url}/api/3/tags`,
+    auth: {
+      user: options.username,
+      password: options.password
+    },
+    json: true
+  };
 
-    Logger.trace('request options are: ', ro);
+  Logger.trace('request options are: ', ro);
+
+  requestWithDefaults(ro, 200, (err, body) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+
+    entity.data.details.availableTags = body.resources;
+
+    ro.url = `${options.url}/api/3/assets/${entity.data.details.id}/tags`;
 
     requestWithDefaults(ro, 200, (err, body) => {
-        if (err) {
-            callback(err);
-            return;
-        }
+      if (err) {
+        callback(err);
+        return;
+      }
 
-        entity.data.details.availableTags = body.resources;
-
-        ro.url = `${options.url}/api/3/assets/${entity.data.details.id}/tags`;
-
-        requestWithDefaults(ro, 200, (err, body) => {
-            if (err) {
-                callback(err);
-                return;
-            }
-
-            entity.data.details.appliedTags = body.resources;
-            Logger.trace({tagData: entity.data}, "TagData");
-            callback(null, entity.data);
-        });
+      entity.data.details.appliedTags = body.resources;
+      Logger.trace({ tagData: entity.data }, 'TagData');
+      callback(null, entity.data);
     });
+  });
 }
 
 function startup(logger) {
-    Logger = logger;
+  Logger = logger;
+  let requestOptions = {};
 
-    if (typeof config.request.cert === 'string' && config.request.cert.length > 0) {
-        requestOptions.cert = fs.readFileSync(config.request.cert);
-    }
+  if (typeof config.request.cert === 'string' && config.request.cert.length > 0) {
+    requestOptions.cert = fs.readFileSync(config.request.cert);
+  }
 
-    if (typeof config.request.key === 'string' && config.request.key.length > 0) {
-        requestOptions.key = fs.readFileSync(config.request.key);
-    }
+  if (typeof config.request.key === 'string' && config.request.key.length > 0) {
+    requestOptions.key = fs.readFileSync(config.request.key);
+  }
 
-    if (typeof config.request.passphrase === 'string' && config.request.passphrase.length > 0) {
-        requestOptions.passphrase = config.request.passphrase;
-    }
+  if (typeof config.request.passphrase === 'string' && config.request.passphrase.length > 0) {
+    requestOptions.passphrase = config.request.passphrase;
+  }
 
-    if (typeof config.request.ca === 'string' && config.request.ca.length > 0) {
-        requestOptions.ca = fs.readFileSync(config.request.ca);
-    }
+  if (typeof config.request.ca === 'string' && config.request.ca.length > 0) {
+    requestOptions.ca = fs.readFileSync(config.request.ca);
+  }
 
-    if (typeof config.request.proxy === 'string' && config.request.proxy.length > 0) {
-        requestOptions.proxy = config.request.proxy;
-    }
+  if (typeof config.request.proxy === 'string' && config.request.proxy.length > 0) {
+    requestOptions.proxy = config.request.proxy;
+  }
 
-    if (typeof config.request.rejectUnauthorized === 'boolean') {
-        requestOptions.rejectUnauthorized = config.request.rejectUnauthorized;
-    }
+  if (typeof config.request.rejectUnauthorized === 'boolean') {
+    requestOptions.rejectUnauthorized = config.request.rejectUnauthorized;
+  }
 
-    requestOptions.json = true;
+  requestOptions.json = true;
 
-    requestWithDefaults = handleRequestError(request.defaults(requestOptions));
+  requestWithDefaults = handleRequestError(request.defaults(requestOptions));
 }
 
 function validateStringOption(errors, options, optionName, errMessage) {
-    if (typeof options[optionName].value !== 'string' ||
-        (typeof options[optionName].value === 'string' && options[optionName].value.length === 0)) {
-        errors.push({
-            key: optionName,
-            message: errMessage
-        });
-    }
+  if (
+    typeof options[optionName].value !== 'string' ||
+    (typeof options[optionName].value === 'string' && options[optionName].value.length === 0)
+  ) {
+    errors.push({
+      key: optionName,
+      message: errMessage
+    });
+  }
 }
 
 function onMessage(payload, options, callback) {
-    Logger.trace('onMessage invoked with payload ' + JSON.stringify(payload));
+  Logger.trace('onMessage invoked with payload ' + JSON.stringify(payload));
 
-    let ro = {
-        json: true,
-        auth: {
-            user: options.username,
-            password: options.password
+  let ro = {
+    json: true,
+    auth: {
+      user: options.username,
+      password: options.password
+    }
+  };
+  if (payload.type === 'applyTag') {
+    ro.url = `${options.url}/api/3/tags/${payload.tagId}/assets/${payload.assetId}`;
+    ro.method = 'PUT';
+
+    Logger.trace('request options are: ', ro);
+
+    requestWithDefaults(ro, 200, (err) => {
+      if (err) {
+        Logger.error('error applying tag ', err);
+        callback(err);
+        return;
+      }
+
+      ro.url = payload.tagsLink;
+      ro.method = 'GET';
+
+      requestWithDefaults(ro, 200, (err, tags) => {
+        if (err) {
+          Logger.error('error fetching all tags', err);
+          callback(err);
+          return;
         }
-    }
-    if (payload.type === 'applyTag') {
-        ro.url = `${options.url}/api/3/tags/${payload.tagId}/assets/${payload.assetId}`;
-        ro.method = 'PUT';
 
-        Logger.trace('request options are: ', ro);
+        Logger.trace('successfully re-fetched tags');
 
-        requestWithDefaults(ro, 200, (err) => {
-            if (err) {
-                Logger.error('error applying tag ', err);
-                callback(err);
-                return;
-            }
+        callback(null, tags.resources);
+      });
+    });
+  } else if (payload.type === 'rescanSite') {
+    ro.method = 'GET';
+    ro.url = `${options.url}/api/3/scans/${payload.scanId}`;
 
-            ro.url = payload.tagsLink;
-            ro.method = 'GET';
-
-            requestWithDefaults(ro, 200, (err, tags) => {
-                if (err) {
-                    Logger.error('error fetching all tags', err);
-                    callback(err);
-                    return;
-                }
-
-                Logger.trace('successfully re-fetched tags');
-
-                callback(null, tags.resources);
-            });
-        });
-    } else if (payload.type === 'rescanSite') {
-        ro.method = 'GET';
-        ro.url = `${options.url}/api/3/scans/${payload.scanId}`;
-
-        requestWithDefaults(ro, 200, (err, scan) => {
-
-        });
-    } else {
-        console.error('invalid message');
-    }
+    requestWithDefaults(ro, 200, (err, scan) => {});
+  } else {
+    console.error('invalid message');
+  }
 }
 
 function validateOptions(options, callback) {
-    let errors = [];
+  let errors = [];
 
-    validateStringOption(errors, options, 'url', 'You must provide a url.');
-    validateStringOption(errors, options, 'username', 'You must provide a username.');
-    validateStringOption(errors, options, 'password', 'You must provide a password. ');
+  validateStringOption(errors, options, 'url', 'You must provide a url.');
+  validateStringOption(errors, options, 'username', 'You must provide a username.');
+  validateStringOption(errors, options, 'password', 'You must provide a password. ');
 
-    callback(null, errors);
+  callback(null, errors);
 }
 
 module.exports = {
-    doLookup: doLookup,
-    onDetails: onDetails,
-    onMessage: onMessage,
-    startup: startup,
-    validateOptions: validateOptions
+  doLookup: doLookup,
+  onDetails: onDetails,
+  onMessage: onMessage,
+  startup: startup,
+  validateOptions: validateOptions
 };
