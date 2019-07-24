@@ -20,93 +20,96 @@ function handleRequestError(request) {
 }
 
 function lookupIPs(entities, options, callback) {
-    let requestBody = {
-        filters: entities
-            .filter(entity => entity.isIP)
-            .map(entity => {
-                return {
-                    field: "ip-address",
-                    operator: "is",
-                    value: entity.value
-                };
-            }),
-        match: "any"
-    };
+  let requestBody = {
+    filters: entities.filter((entity) => entity.isIP).map((entity) => {
+      return {
+        field: 'ip-address',
+        operator: 'is',
+        value: entity.value
+      };
+    }),
+    match: 'any'
+  };
 
-    let ro = {
-        url: `${options.url}/api/3/assets/search`,
-        method: 'POST',
-        auth: {
-            user: options.username,
-            password: options.password
-        },
-        body: requestBody,
-        json: true
-    };
+  let ro = {
+    url: `${options.url}/api/3/assets/search`,
+    method: 'POST',
+    auth: {
+      user: options.username,
+      password: options.password
+    },
+    body: requestBody,
+    json: true
+  };
 
-    Logger.trace('request options are: ', ro);
+  Logger.trace('request options are: ', ro);
 
-    requestWithDefaults(ro, 200, (err, body) => {
-        if (err) {
-            Logger.error('error during lookup', err);
-            callback(null, err);
-            return;
+  requestWithDefaults(ro, 200, (err, body) => {
+    if (err) {
+      callback(err);
+      return;
+    }
+
+    let resourcesByIP = {};
+    Logger.trace({ body: body }, 'Logging data');
+    body.resources.forEach((resource) => {
+      resourcesByIP[resource.ip] = resource;
+    });
+
+    let results = [];
+
+    entities.forEach((entity) => {
+      let resource = resourcesByIP[entity.value];
+      if (!!resource) {
+        resource.__isAsset = true;
+        Logger.trace({ resource: resource }, 'Checking data before it gets passed');
+        let critical,
+          exploits,
+          description,
+          vulns,
+          policies = 'NA';
+
+        if (typeof resource.vulnerabilities.critical !== 'undefined') {
+          critical = resource.vulnerabilities.critical;
+        }
+        if (typeof resource.vulnerabilities.exploits !== 'undefined') {
+          exploits = resource.vulnerabilities.exploits;
+        }
+        if (typeof resource.osFingerprint !== 'undefined') {
+          description = resource.osFingerprint.description;
+        } else {
+          description = 'No Operating System Provided';
+        }
+        if (typeof resource.assessedForVulnerabilities !== 'undefined') {
+          vulns = resource.assessedForVulnerabilities;
+        }
+        if (typeof resource.assessedForPolicies !== 'undefined') {
+          policies = resource.assessedForPolicies;
         }
 
-        let resourcesByIP = {};
-        Logger.trace({body: body}, "Logging data");
-        body.resources.forEach(resource => {
-            resourcesByIP[resource.ip] = resource;
+        results.push({
+          entity: entity,
+          data: {
+            summary: [
+              `Critical Vulns: ${critical}`,
+              `Exploits: ${exploits}`,
+              `Operating System: ${description}`,
+              `Assessed for Vulns: ${vulns}`,
+              `Assessed for Policies: ${policies}`
+            ],
+            details: resource
+          }
         });
-
-        let results = [];
-
-        entities.forEach(entity => {
-            let resource = resourcesByIP[entity.value];
-            if (!!resource) {
-                resource.__isAsset = true;
-                Logger.trace({resource: resource}, "Checking data before it gets passed");
-                if(typeof resource.vulnerabilities.critical !== "undefined") {
-                  var critical = resource.vulnerabilities.critical
-                }
-                if(typeof resource.vulnerabilities.exploits !== "undefined") {
-                  var exploits = resource.vulnerabilities.exploits
-                }
-                if(typeof resource.osFingerprint !== "undefined" ) {
-                  var description = resource.osFingerprint.description
-                } else {
-                  description = "No Operating System Provided"
-                }
-                if(typeof resource.assessedForVulnerabilities !== "undefined") {
-                  var vulns = resource.assessedForVulnerabilities
-                }
-                if(typeof resource.assessedForPolicies !== "undefined") {
-                  var policies = resource.assessedForPolicies
-                }
-
-                results.push({
-                    entity: entity,
-                    data: {
-                        summary: [
-                            "Critical Vulns: " + critical,
-                            `Exploits: ` + exploits,
-                            `Operating System: ` + description,
-                            `Assesed for Vulns: ` + vulns,
-                            `Assesed for Policies: ` + policies
-                        ],
-                        details: resource
-                    }
-                });
-            } else {
-                results.push({
-                    entity: entity,
-                    data: null
-                });
-            }
+      } else {
+        results.push({
+          entity: entity,
+          data: null
         });
-
-        callback(null, results);
+      }
     });
+
+    callback(null, results);
+  });
 }
 /*
 function pollForCompletedReport(iteration, reportUrl, options, callback) {
