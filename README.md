@@ -7,14 +7,14 @@ To learn more about Rapid7 Nexpose, please visit: [official website](https://www
 
 Check out the integration in action:
 
-![nexposeNew](https://user-images.githubusercontent.com/22529325/61459725-5eca6d80-a93b-11e9-8046-d781e0e9194d.gif)
+![nexposeNew](images/overlay.png)
 
 
 ## Rapid7 Nexpose Integration Options
 
 ### Nexpose URL
 
-URL to your Rapid7 Nexpose instance to use.
+URL to your Rapid7 Nexpose instance to use including the schema (http://, https://) and port as needed.
 
 ### Nexpose Username
 
