@@ -1,129 +1,137 @@
+<a class="p-link" href="https://18.206.174.30:3780/asset.jsp?devid={{details.id}}">View in Rapid7 Nexpose</a>
+
+<h1 class="p-title">{{fa-icon "desktop" fixedWidth=true}} Asset</h1>
 <div>
-    {{#if details.__isAsset}}
-    <div>
-        <a class="p-link" href="https://18.206.174.30:3780/asset.jsp?devid={{details.id}}">View in Rapid7 Nexpose</a>
-
-        <h1 class="p-title">Asset</h1>
-        <div>
-            <span class="p-key">OS: </span>
-            <span class="p-value">{{details.os}}</span>
-        </div>
-        <div>
-            <span class="p-key">Risk Score: </span>
-            <span class="p-value">{{details.riskScore}}</span>
-        </div>
-
-        {{#if details.osFingerprint.cpe}}
-        <div>
-            <span class="p-key">CPE: </span>
-            <span class="p-value">{{details.osFingerprint.cpe.product}}</span>
-        </div>
-
-        <div>
-            <span class="p-key">CPE Vendor: </span>
-            <span class="p-value">{{details.osFingerprint.cpe.vendor}}</span>
-        </div>
-        {{/if}}
-
-        {{#if details.assessedForPolicies}}
-        <div>
-            <span class="p-key">Assessed For Policies</span>
-        </div>
-        {{/if}}
-        {{#if details.assessedForVulnerabilities}}
-        <div>
-            <span class="p-key">Assessed For Vulnerabilities</span>
-        </div>
-        {{/if}}
-
-
-        <h1 class="p-title">Vulnerabilities</h1>
-        <div>
-            <span class="p-key">Total: </span>
-            <span class="p-value">{{details.vulnerabilities.total}}</span>
-        </div>
-        <div>
-            <span class="p-key">Critical: </span>
-            <span class="p-value">{{details.vulnerabilities.critical}}</span>
-        </div>
-        <div>
-            <span class="p-key">Exploits: </span>
-            <span class="p-value">{{details.vulnerabilities.exploits}}</span>
-        </div>
-        <div>
-            <span class="p-key">Malware Kits: </span>
-            <span class="p-value">{{details.vulnerabilities.malwareKits}}</span>
-        </div>
-        <div>
-            <span class="p-key">Severe: </span>
-            <span class="p-value">{{details.vulnerabilities.severe}}</span>
-        </div>
-
-
-        <h1 class="p-title">Services</h1>
-        {{#each details.services as |service|}}
-        <div class="p-value">{{service.name}}</div>
-        {{/each}}
-
-
-        <!--
-    <h1 class="p-title">Links</h1>
-    {{#each details.links as |link|}}
-    <div>
-        <a class="p-link" href="{{link.href}}">{{link.rel}}</a>
-    </div>
-    {{/each}}
-    -->
-
-
-        <h1 class="p-title">History</h1>
-        {{#each details.history as |history|}}
-        <div>
-            <span class="p-value">{{history.type}}</span>
-        </div>
-        <div>
-            <span class="p-key">Version: </span>
-            <span class="p-value">{{history.version}}</span>
-        </div>
-        <div>
-            <span class="p-key">Scan ID: </span>
-            <span class="p-value">{{history.scanId}}</span>
-        </div>
-        <div>
-            <span class="p-key">Date: </span>
-            <span class="p-value">{{history.date}}</span>
-        </div>
-        {{/each}}
-
-        <div>
-            <h1 class="p-title">Nexpose Tags</h1>
-
-            <div class="nexpose-tags">
-                {{#each details.appliedTags as |tag|}}
-                <div>
-                    <span class="nexpose-tags"> {{tag.type}} - <b>{{tag.name}}</b> </span>
-                </div>
-                {{/each}}
-            </div>
-            <div>
-            <select size=2 onchange={{action 'onSelectTag' value="target.value"}}>
-                {{#each details.availableTags as |tag|}}
-                <option value="{{tag.id}}">{{tag.type}} - {{tag.name}}: {{tag.riskModifier}}</option>
-                {{/each}}
-            </select>
-          </div>
-
-            <div class="nexpose-button">
-            <button {{action "applyTag" details.id}} class="btn btn-primary btn-apply">
-                Change Tag
-            </button>
-          </div>
-        </div>
-    </div>
-    {{/if}}
-    {{#if details.__isVulnerability}}
-    <div>
-        <h1 class="p-title">VULNERABILITY</h1>
-    </div>
-    {{/if}}
+    <span class="p-key">OS: </span>
+    <span class="p-value">{{details.os}}</span>
 </div>
+<div>
+    <span class="p-key">Risk Score: </span>
+    <span class="p-value">{{details.riskScore}}</span>
+</div>
+
+{{#if details.osFingerprint.cpe}}
+    <div>
+        <span class="p-key">CPE: </span>
+        <span class="p-value">{{details.osFingerprint.cpe.product}}</span>
+    </div>
+
+    <div>
+        <span class="p-key">CPE Vendor: </span>
+        <span class="p-value">{{details.osFingerprint.cpe.vendor}}</span>
+    </div>
+{{/if}}
+
+{{#if details.assessedForPolicies}}
+    <div>
+        <span class="p-key">Assessed For Policies</span>
+    </div>
+{{/if}}
+
+{{#if details.assessedForVulnerabilities}}
+    <div>
+        <span class="p-key">Assessed For Vulnerabilities</span>
+    </div>
+{{/if}}
+
+
+<h1 class="p-title">{{fa-icon "bug" fixedWidth=true}} Vulnerabilities</h1>
+<div>
+    <span class="p-key">Total: </span>
+    <span class="p-value">{{details.vulnerabilities.total}}</span>
+</div>
+<div>
+    <span class="p-key">Critical: </span>
+    <span class="p-value">{{details.vulnerabilities.critical}}</span>
+</div>
+<div>
+    <span class="p-key">Exploits: </span>
+    <span class="p-value">{{details.vulnerabilities.exploits}}</span>
+</div>
+<div>
+    <span class="p-key">Malware Kits: </span>
+    <span class="p-value">{{details.vulnerabilities.malwareKits}}</span>
+</div>
+<div>
+    <span class="p-key">Severe: </span>
+    <span class="p-value">{{details.vulnerabilities.severe}}</span>
+</div>
+
+
+<h1 class="p-title">{{fa-icon "network-wired" fixedWidth=true}} Services</h1>
+{{#each details.services as |service|}}
+    <div class="p-value">{{service.name}}</div>
+{{/each}}
+
+
+<h1 class="p-title">{{fa-icon "history" fixedWidth=true}} History</h1>
+{{#each details.history as |history|}}
+    <div>
+        <span class="p-value">{{history.type}}</span>
+    </div>
+    <div>
+        <span class="p-key">Version: </span>
+        <span class="p-value">{{history.version}}</span>
+    </div>
+    <div>
+        <span class="p-key">Scan ID: </span>
+        <span class="p-value">{{history.scanId}}</span>
+    </div>
+    <div>
+        <span class="p-key">Date: </span>
+        <span class="p-value">{{history.date}}</span>
+    </div>
+{{/each}}
+
+<h1 class="p-title">{{fa-icon "cubes" fixedWidth=true}} Criticality</h1>
+<div class="nexpose-tags">
+    {{#each details.appliedTags.criticality as |tag|}}
+        <span class="nexpose-tag">{{tag.name}}</span>
+    {{/each}}
+</div>
+
+<div class="input-group">
+    <select class="custom-select" onchange={{action 'onSelectTag' value="target.value"}}>
+        {{#each details.availableTags as |tag|}}
+            <option selected="{{if (eq tag.name details.appliedTags.criticality.0.name) "true"}}" value="{{tag.id}}">{{tag.name}}</option>
+        {{/each}}
+    </select>
+    <div class="input-group-append">
+        <button  {{action "applyTag" details.id}} disabled="{{if isUpdatingCriticality "true"}}" class="btn btn-outline-secondary btn-sm btn-select-input-group" type="button">
+            {{#if isUpdatingCriticality}}
+                {{fa-icon "spinner-third" spin=true fixedWidth=true}}
+            {{else}}
+                Update
+            {{/if}}
+        </button>
+    </div>
+</div>
+
+<h1 class="p-title">{{fa-icon "tags" fixedWidth=true}} Custom Tags</h1>
+<div class="nexpose-tags">
+    {{#each details.appliedTags.custom as |tag|}}
+        <span class="nexpose-tag {{tag.color}}">{{tag.name}}</span>
+    {{/each}}
+</div>
+
+
+<h1 class="p-title">{{fa-icon "user-tie" fixedWidth=true}} Owners</h1>
+<div class="nexpose-tags">
+    {{#each details.appliedTags.owner as |tag|}}
+        <span class="nexpose-tag">{{tag.name}}</span>
+    {{/each}}
+</div>
+
+<h1 class="p-title">{{fa-icon "map-marker-alt" fixedWidth=true}} Locations</h1>
+<div class="nexpose-tags">
+    {{#each details.appliedTags.location as |tag|}}
+        <span class="nexpose-tag">{{tag.name}}</span>
+    {{/each}}
+</div>
+
+{{#if updateError}}
+    <pre>
+        {{updateError}}
+    </pre>
+{{/if}}
+
