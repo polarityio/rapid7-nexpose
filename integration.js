@@ -107,7 +107,7 @@ function lookupIPs(entities, options, callback) {
               `Assessed for Vulns: ${vulns}`,
               `Assessed for Policies: ${policies}`
             ],
-            details: resource
+            details: { ...resource, url: options.url }
           }
         });
       } else {
