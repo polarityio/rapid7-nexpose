@@ -3,15 +3,15 @@ let tagId = 2; // high is the first tag in the list, so we let it default
 polarity.export = PolarityComponent.extend({
   details: Ember.computed.alias('block.data.details'),
 
-  tagsLink: Ember.computed('block.data.details', function() {
+  tagsLink: Ember.computed('block.data.details', function () {
     return this.get('block.data.details')
-      .links.filter(function(link) {
+      .links.filter(function (link) {
         return link.rel === 'Tags';
       })
       .pop();
   }),
   actions: {
-    applyTag: function(assetId) {
+    applyTag: function (assetId) {
       let self = this;
       let tagsLink = self.get('tagsLink');
       this.set('isUpdatingCriticality', true);
@@ -36,7 +36,7 @@ polarity.export = PolarityComponent.extend({
           this.set('isUpdatingCriticality', false);
         });
     },
-    onSelectTag: function(value) {
+    onSelectTag: function (value) {
       tagId = value;
     }
   }

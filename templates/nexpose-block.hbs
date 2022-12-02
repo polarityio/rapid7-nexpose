@@ -1,137 +1,177 @@
-<a class="p-link" href="{{details.url}}/asset.jsp?devid={{details.id}}">View in Rapid7 Nexpose</a>
+{{#each (take 10 details.resources) as | asset index |}}
+  {{#if (gt index 0)}}
+    <hr>
+  {{/if}}
+  <a class="p-link" href="{{block.userOptions.url}}/asset.jsp?devid={{asset.id}}">View Asset in Rapid7 Nexpose {{fa-icon 'external-link-square' class='external-link-icon'}}</a>
 
-<h1 class="p-title">{{fa-icon "desktop" fixedWidth=true}} Asset</h1>
-<div>
-    <span class="p-key">OS: </span>
-    <span class="p-value">{{details.os}}</span>
-</div>
-<div>
-    <span class="p-key">Risk Score: </span>
-    <span class="p-value">{{details.riskScore}}</span>
-</div>
-
-{{#if details.osFingerprint.cpe}}
+  <h1 class="p-title">{{fa-icon "desktop" fixedWidth=true}}
+    Asset
+  </h1>
+  {{#if asset.ip}}
+      <div>
+        <span class="p-key">IP: </span>
+        <span class="p-value">{{asset.ip}}</span>
+      </div>
+  {{/if}}
+  {{#if asset.hostName}}
     <div>
-        <span class="p-key">CPE: </span>
-        <span class="p-value">{{details.osFingerprint.cpe.product}}</span>
+      <span class="p-key">Hostname: </span>
+      <span class="p-value">{{asset.hostName}}</span>
     </div>
-
+  {{/if}}
+  {{#if asset.os}}
     <div>
-        <span class="p-key">CPE Vendor: </span>
-        <span class="p-value">{{details.osFingerprint.cpe.vendor}}</span>
+        <span class="p-key">OS: </span>
+        <span class="p-value">{{asset.os}}</span>
     </div>
-{{/if}}
+  {{/if}}
+  <div>
+      <span class="p-key">Risk Score: </span>
+      <span class="p-value">{{asset.riskScore}}</span>
+  </div>
 
-{{#if details.assessedForPolicies}}
+  {{#if asset.osFingerprint.cpe}}
+      <div>
+          <span class="p-key">CPE: </span>
+          <span class="p-value">{{asset.osFingerprint.cpe.product}}</span>
+      </div>
+
+      <div>
+          <span class="p-key">CPE Vendor: </span>
+          <span class="p-value">{{asset.osFingerprint.cpe.vendor}}</span>
+      </div>
+  {{/if}}
+
+  {{#if (eq asset.assessedForPolicies true)}}
+      <div>
+          <span class="p-key">Assessed For Policies</span>
+        <span class="p-value">Yes</span>
+      </div>
+  {{else if (eq asset.assessedForPolicies false)}}
     <div>
-        <span class="p-key">Assessed For Policies</span>
+      <span class="p-key">Assessed For Policies:</span>
+      <span class="p-value">No</span>
     </div>
-{{/if}}
+  {{/if}}
 
-{{#if details.assessedForVulnerabilities}}
+  {{#if (eq asset.assessedForVulnerabilities true)}}
+      <div>
+        <span class="p-key">Assessed For Vulnerabilities:</span>
+        <span class="p-value">Yes</span>
+      </div>
+  {{else if (eq asset.assessedForVulnerabilities true)}}
     <div>
-        <span class="p-key">Assessed For Vulnerabilities</span>
+      <span class="p-key">Assessed For Vulnerabilities</span>
+      <span class="p-value">No</span>
     </div>
-{{/if}}
+  {{/if}}
 
 
-<h1 class="p-title">{{fa-icon "bug" fixedWidth=true}} Vulnerabilities</h1>
-<div>
+  <h1 class="p-title">{{fa-icon "bug" fixedWidth=true}} Vulnerabilities</h1>
+  <div>
     <span class="p-key">Total: </span>
-    <span class="p-value">{{details.vulnerabilities.total}}</span>
-</div>
-<div>
+    <span class="p-value">{{asset.vulnerabilities.total}}</span>
+  </div>
+  <div>
     <span class="p-key">Critical: </span>
-    <span class="p-value">{{details.vulnerabilities.critical}}</span>
-</div>
-<div>
+    <span class="p-value">{{asset.vulnerabilities.critical}}</span>
+  </div>
+  <div>
     <span class="p-key">Exploits: </span>
-    <span class="p-value">{{details.vulnerabilities.exploits}}</span>
-</div>
-<div>
+    <span class="p-value">{{asset.vulnerabilities.exploits}}</span>
+  </div>
+  <div>
     <span class="p-key">Malware Kits: </span>
-    <span class="p-value">{{details.vulnerabilities.malwareKits}}</span>
-</div>
-<div>
+    <span class="p-value">{{asset.vulnerabilities.malwareKits}}</span>
+  </div>
+  <div>
+    <span class="p-key">Moderate: </span>
+    <span class="p-value">{{asset.vulnerabilities.moderate}}</span>
+  </div>
+  <div>
     <span class="p-key">Severe: </span>
-    <span class="p-value">{{details.vulnerabilities.severe}}</span>
-</div>
+    <span class="p-value">{{asset.vulnerabilities.severe}}</span>
+  </div>
 
 
-<h1 class="p-title">{{fa-icon "network-wired" fixedWidth=true}} Services</h1>
-{{#each details.services as |service|}}
-    <div class="p-value">{{service.name}}</div>
-{{/each}}
-
-
-<h1 class="p-title">{{fa-icon "history" fixedWidth=true}} History</h1>
-{{#each details.history as |history|}}
-    <div>
-        <span class="p-value">{{history.type}}</span>
+  <h1 class="p-title">{{fa-icon "network-wired" fixedWidth=true}} Services</h1>
+  {{#each asset.services as |service index|}}
+    <div class="service-pill">
+      <span class="port">{{service.port}}</span><span class="transport">{{service.protocol}}</span><span class="service">{{service.name}}</span>
     </div>
-    <div>
-        <span class="p-key">Version: </span>
-        <span class="p-value">{{history.version}}</span>
-    </div>
-    <div>
-        <span class="p-key">Scan ID: </span>
-        <span class="p-value">{{history.scanId}}</span>
-    </div>
-    <div>
-        <span class="p-key">Date: </span>
-        <span class="p-value">{{history.date}}</span>
-    </div>
-{{/each}}
+  {{/each}}
 
-<h1 class="p-title">{{fa-icon "cubes" fixedWidth=true}} Criticality</h1>
-<div class="nexpose-tags">
-    {{#each details.appliedTags.criticality as |tag|}}
-        <span class="nexpose-tag">{{tag.name}}</span>
-    {{/each}}
-</div>
+  {{!--
+  <h1 class="p-title">{{fa-icon "cubes" fixedWidth=true}} Criticality</h1>
+  <div class="nexpose-tags">
+      {{#each details.appliedTags.criticality as |tag|}}
+          <span class="nexpose-tag">{{tag.name}}</span>
+      {{/each}}
+  </div>
 
-<div class="input-group">
-    <select class="custom-select" onchange={{action 'onSelectTag' value="target.value"}}>
-        {{#each details.availableTags as |tag|}}
-            <option selected="{{if (eq tag.name details.appliedTags.criticality.0.name) "true"}}" value="{{tag.id}}">{{tag.name}}</option>
+  <div class="input-group">
+      <select class="custom-select" onchange={{action 'onSelectTag' value="target.value"}}>
+          {{#each details.availableTags as |tag|}}
+              <option selected="{{if (eq tag.name details.appliedTags.criticality.0.name) "true"}}" value="{{tag.id}}">{{tag.name}}</option>
+          {{/each}}
+      </select>
+      <div class="input-group-append">
+          <button  {{action "applyTag" details.id}} disabled="{{if isUpdatingCriticality "true"}}" class="btn btn-outline-secondary btn-sm btn-select-input-group" type="button">
+              {{#if isUpdatingCriticality}}
+                  {{fa-icon "spinner-third" spin=true fixedWidth=true}}
+              {{else}}
+                  Update
+              {{/if}}
+          </button>
+      </div>
+  </div>
+  --}}
+  {{#if (gt asset.appliedTags.custom.length 0)}}
+    <h1 class="p-title">{{fa-icon "tags" fixedWidth=true}} Custom Tags</h1>
+    <div class="nexpose-tags">
+        {{#each asset.appliedTags.custom as |tag|}}
+            <span class="nexpose-tag {{tag.color}}">{{tag.name}}</span>
         {{/each}}
-    </select>
-    <div class="input-group-append">
-        <button  {{action "applyTag" details.id}} disabled="{{if isUpdatingCriticality "true"}}" class="btn btn-outline-secondary btn-sm btn-select-input-group" type="button">
-            {{#if isUpdatingCriticality}}
-                {{fa-icon "spinner-third" spin=true fixedWidth=true}}
-            {{else}}
-                Update
-            {{/if}}
-        </button>
     </div>
-</div>
+  {{/if}}
 
-<h1 class="p-title">{{fa-icon "tags" fixedWidth=true}} Custom Tags</h1>
-<div class="nexpose-tags">
-    {{#each details.appliedTags.custom as |tag|}}
-        <span class="nexpose-tag {{tag.color}}">{{tag.name}}</span>
-    {{/each}}
-</div>
+  {{#if (gt asset.appliedTags.location.length 0)}}
+    <h1 class="p-title">{{fa-icon "user-tie" fixedWidth=true}} Owners</h1>
+    <div class="nexpose-tags">
+        {{#each asset.appliedTags.owner as |tag|}}
+            <span class="nexpose-tag">{{tag.name}}</span>
+        {{/each}}
+    </div>
+  {{/if}}
 
+  {{#if (gt asset.appliedTags.location.length 0)}}
+    <h1 class="p-title">{{fa-icon "map-marker-alt" fixedWidth=true}} Locations</h1>
+    <div class="nexpose-tags">
+        {{#each asset.appliedTags.location as |tag|}}
+            <span class="nexpose-tag">{{tag.name}}</span>
+        {{/each}}
+    </div>
+  {{/if}}
 
-<h1 class="p-title">{{fa-icon "user-tie" fixedWidth=true}} Owners</h1>
-<div class="nexpose-tags">
-    {{#each details.appliedTags.owner as |tag|}}
-        <span class="nexpose-tag">{{tag.name}}</span>
-    {{/each}}
-</div>
+  <h1 class="p-title">{{fa-icon "history" fixedWidth=true}} History</h1>
+  {{#each asset.history as |history|}}
+    <div>
+      <span class="p-value">{{history.type}} / Version: {{history.version}} / ScanID: {{history.scanId}}</span>
+    </div>
+    <div class="mb-1">
+      <span class="p-key">Date: </span>
+      <span class="p-value">{{history.date}}</span>
+    </div>
+  {{/each}}
 
-<h1 class="p-title">{{fa-icon "map-marker-alt" fixedWidth=true}} Locations</h1>
-<div class="nexpose-tags">
-    {{#each details.appliedTags.location as |tag|}}
-        <span class="nexpose-tag">{{tag.name}}</span>
-    {{/each}}
-</div>
-
-{{#if updateError}}
-    <pre>
-        {{updateError}}
-    </pre>
+  {{#if updateError}}
+      <pre>
+          {{updateError}}
+      </pre>
+  {{/if}}
+{{/each}}
+{{#if (gt details.resources.length 10)}}
+  <div class="mt-1 p-footnote">
+    Showing first 10 assets out of {{details.resources.length}}
+  </div>
 {{/if}}
-
