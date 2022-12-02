@@ -24,7 +24,7 @@ module.exports = {
    */
   description:
     "Rapid7's on-premise option for vulnerability management software, monitors exposures in real-time",
-  entityTypes: ['ipv4'],
+  entityTypes: ['ipv4', 'cve', 'ipv6'],
   /**
    * An array of style files (css or less) that will be included for your integration. Any styles specified in
    * the below files can be used in your custom template.
@@ -81,7 +81,7 @@ module.exports = {
     // the directory you specify is writable by the `polarityd:polarityd` user and group.
 
     //directoryPath: '/var/log/polarity-integrations',
-    level: 'info' //trace, debug, info, warn, error, fatal
+    level: 'trace' //trace, debug, info, warn, error, fatal
   },
   /**
    * Options that are displayed to the user/admin in the Polarity integration user-interface.  Should be structured
@@ -95,11 +95,11 @@ module.exports = {
       key: 'url',
       name: 'Rapid7 Nexpose URL',
       description:
-        'URL to the Rapid7 Nexpose instance to use which should include the schema (i.e., https://, http://) and port if necessary',
+        'URL to the Rapid7 Nexpose instance to use which should include the schema (i.e., https://, http://) and port if necessary.  This option should be set to "Users can view only"',
       default: '',
       type: 'text',
       userCanEdit: false,
-      adminOnly: true
+      adminOnly: false
     },
     {
       key: 'username',

@@ -1,6 +1,6 @@
 const async = require('async');
 const config = require('./config/config');
-const request = require('request');
+const request = require('postman-request');
 const fs = require('fs');
 
 let Logger;
@@ -29,11 +29,104 @@ function handleRequestError(request) {
   };
 }
 
+function getSummaryTags(resources, isCve) {
+  const tags = [];
+  if (!Array.isArray(resources)) {
+    resources = [resources];
+  }
+
+  if (resources.length > 1) {
+    return [`${resources.length} assets`];
+  } else if (resources.length === 1) {
+    let resource = resources[0];
+
+    if(resource.ip && isCve){
+      tags.push(resource.ip);
+    }
+
+    if (typeof resource.osFingerprint !== 'undefined') {
+      tags.push(`OS: ${resource.osFingerprint.description}`);
+    }
+
+    if (typeof resource.vulnerabilities.critical !== 'undefined') {
+      tags.push(`Critical Vulns: ${resource.vulnerabilities.critical}`);
+    }
+
+    if (typeof resource.vulnerabilities.exploits !== 'undefined') {
+      tags.push(`Exploits: ${resource.vulnerabilities.exploits}`);
+    }
+
+    return tags;
+  } else {
+    return ['No Results'];
+  }
+}
+
+function lookupCves(entities, options, callback) {
+  const cveResults = [];
+  async.each(
+    entities,
+    (entity, done) => {
+      const requestOptions = {
+        url: `${options.url}/api/3/assets/search`,
+        method: 'POST',
+        auth: {
+          user: options.username,
+          password: options.password
+        },
+        body: {
+          filters: [
+            {
+              field: 'cve',
+              operator: 'is',
+              value: entity.value
+            }
+          ],
+          match: 'any'
+        },
+        json: true
+      };
+
+      Logger.trace({ requestOptions }, 'CVE Search Request Options');
+
+      requestWithDefaults(requestOptions, 200, (err, body) => {
+        if (err) {
+          Logger.error({ body });
+          done(err);
+          return;
+        }
+
+        if (body.resources.length > 0) {
+          cveResults.push({
+            entity: entity,
+            data: {
+              summary: getSummaryTags(body.resources, true),
+              details: {
+                resources: body.resources
+              }
+            }
+          });
+        } else {
+          cveResults.push({
+            entity: entity,
+            data: null
+          });
+        }
+
+        done();
+      });
+    },
+    (err) => {
+      callback(err, cveResults);
+    }
+  );
+}
+
 function lookupIPs(entities, options, callback) {
   let requestBody = {
-    filters: entities.filter((entity) => entity.isIP).map((entity) => {
+    filters: entities.map((entity) => {
       return {
-        field: 'ip-address',
+        field: entity.type === 'cve' ? 'cve' : 'ip-address',
         operator: 'is',
         value: entity.value
       };
@@ -52,7 +145,7 @@ function lookupIPs(entities, options, callback) {
     json: true
   };
 
-  Logger.trace('request options are: ', ro);
+  Logger.trace({ requestOptions: ro }, 'IP Search Request Options');
 
   requestWithDefaults(ro, 200, (err, body) => {
     if (err) {
@@ -61,7 +154,7 @@ function lookupIPs(entities, options, callback) {
     }
 
     let resourcesByIP = {};
-    Logger.trace({ body: body }, 'Logging data');
+
     body.resources.forEach((resource) => {
       resourcesByIP[resource.ip] = resource;
     });
@@ -72,42 +165,18 @@ function lookupIPs(entities, options, callback) {
       let resource = resourcesByIP[entity.value];
       if (!!resource) {
         resource.__isAsset = true;
-        Logger.trace({ resource: resource }, 'Checking data before it gets passed');
-        let critical,
-          exploits,
-          description,
-          vulns,
-          policies = 'NA';
-
-        if (typeof resource.vulnerabilities.critical !== 'undefined') {
-          critical = resource.vulnerabilities.critical;
-        }
-        if (typeof resource.vulnerabilities.exploits !== 'undefined') {
-          exploits = resource.vulnerabilities.exploits;
-        }
-        if (typeof resource.osFingerprint !== 'undefined') {
-          description = resource.osFingerprint.description;
-        } else {
-          description = 'No Operating System Provided';
-        }
-        if (typeof resource.assessedForVulnerabilities !== 'undefined') {
-          vulns = resource.assessedForVulnerabilities;
-        }
-        if (typeof resource.assessedForPolicies !== 'undefined') {
-          policies = resource.assessedForPolicies;
-        }
+        Logger.trace(
+          { resource: resource, entity: entity.value },
+          'Checking data before it gets passed'
+        );
 
         results.push({
           entity: entity,
           data: {
-            summary: [
-              `Critical Vulns: ${critical}`,
-              `Exploits: ${exploits}`,
-              `Operating System: ${description}`,
-              `Assessed for Vulns: ${vulns}`,
-              `Assessed for Policies: ${policies}`
-            ],
-            details: resource
+            summary: getSummaryTags(resource),
+            details: {
+              resources: [resource]
+            }
           }
         });
       } else {
@@ -123,27 +192,45 @@ function lookupIPs(entities, options, callback) {
 }
 
 function doLookup(entities, options, callback) {
-  Logger.trace('options are', options);
+  Logger.trace({ entities }, 'doLookup');
 
-  let results = [];
+  let lookupResults = [];
+
+  const ipAddresses = entities.filter((entity) => entity.isIP);
+  const cves = entities.filter((entity) => entity.types.indexOf('cve') >= 0);
 
   async.parallel(
-    [
-      (done) => {
-        lookupIPs(entities.filter((entity) => entity.isIP), options, (err, _results) => {
-          results = results.concat(_results);
-          done(err);
-        });
+    {
+      ipLookups: function (done) {
+        if (ipAddresses.length > 0) {
+          lookupIPs(ipAddresses, options, (err, _results) => {
+            lookupResults = lookupResults.concat(_results);
+            done(err);
+          });
+        } else {
+          done();
+        }
+      },
+      cveLookups: function (done) {
+        if (cves.length > 0) {
+          lookupCves(cves, options, (err, _results) => {
+            lookupResults = lookupResults.concat(_results);
+            done(err);
+          });
+        } else {
+          done();
+        }
       }
-    ],
+    },
     (err) => {
-      callback(err, results);
+      Logger.trace({ lookupResults }, 'Lookup Results');
+      callback(err, lookupResults);
     }
   );
 }
 
-function onDetails(entity, options, callback) {
-  let ro = {
+function onDetails(resultObject, options, callback) {
+  let requestOptions = {
     url: `${options.url}/api/3/tags`,
     qs: {
       type: 'criticality'
@@ -155,41 +242,49 @@ function onDetails(entity, options, callback) {
     json: true
   };
 
-  Logger.trace('request options are: ', ro);
+  Logger.trace({ requestOptions }, 'Request Options');
 
   // Return all built-in tags of type "Criticality"
-  requestWithDefaults(ro, 200, (err, body) => {
+  requestWithDefaults(requestOptions, 200, (err, body) => {
     if (err) {
       callback(err);
       return;
     }
 
-    entity.data.details.availableTags = body.resources;
+    resultObject.data.details.availableTags = body.resources;
 
-    ro.url = `${options.url}/api/3/assets/${entity.data.details.id}/tags`;
+    async.each(
+      resultObject.data.details.resources,
+      (resource, done) => {
+        requestOptions.url = `${options.url}/api/3/assets/${resource.id}/tags`;
 
-    requestWithDefaults(ro, 200, (err, body) => {
-      if (err) {
-        callback(err);
-        return;
+        requestWithDefaults(requestOptions, 200, (err, body) => {
+          if (err) {
+            done(err);
+            return;
+          }
+
+          Logger.trace({body}, 'onDetails Response Body');
+
+          // There are four types of tags and they appear to be built-in
+          resource.appliedTags = {
+            criticality: [],
+            custom: [],
+            location: [],
+            owner: []
+          };
+
+          body.resources.forEach((tag) => {
+            resource.appliedTags[tag.type].push(tag);
+          });
+
+          done(null);
+        });
+      },
+      (err) => {
+        callback(null, resultObject.data);
       }
-
-      // There are four types of tags and they appear to be built-in
-      entity.data.details.appliedTags = {
-        criticality: [],
-        custom: [],
-        location: [],
-        owner: []
-      };
-
-      body.resources.forEach((tag) => {
-        entity.data.details.appliedTags[tag.type].push(tag);
-      });
-
-      //body.resources;
-      Logger.trace({ tagData: entity.data }, 'TagData');
-      callback(null, entity.data);
-    });
+    );
   });
 }
 
