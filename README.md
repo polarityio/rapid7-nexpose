@@ -5,9 +5,10 @@ Rapid7 offers two core vulnerability management products to help you do this: In
 
 To learn more about Rapid7 Nexpose, please visit: [official website](https://www.rapid7.com/products/nexpose/)
 
-Check out the integration in action:
+| ![](images/overlay.png) |![](images/cve-lookup.png)
+|---|---|
+|*Asset Search* |*CVE Search*|
 
-![nexposeNew](images/overlay.png)
 
 
 ## Rapid7 Nexpose Integration Options
