@@ -1,7 +1,7 @@
 {
   "main": "./integration.js",
   "name": "nexpose",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "private": true,
   "author": "Polarity",
   "dependencies": {
