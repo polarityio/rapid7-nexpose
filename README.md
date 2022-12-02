@@ -1,6 +1,6 @@
-# Polarity Rapid7 Nexpose/Insight Integration
+# Polarity Rapid7 Nexpose Integration
 
-Rapid7 offers two core vulnerability management products to help you do this: InsightVM and Nexpose. The Polarity - Nexpose looks up IPs for related vulnerabilities that Nexpose has identified.
+Rapid7 offers two core vulnerability management products to help you do this: InsightVM and Nexpose. The Polarity - Nexpose integration looks up IPs for related vulnerabilities that Nexpose has identified.
 
 
 To learn more about Rapid7 Nexpose, please visit: [official website](https://www.rapid7.com/products/nexpose/)
@@ -14,7 +14,7 @@ Check out the integration in action:
 
 ### Nexpose URL
 
-URL to your Rapid7 Nexpose instance to use including the schema (http://, https://) and port as needed.
+URL to your Rapid7 Nexpose Security Console instance to use including the schema (http://, https://) and port as needed.
 
 ### Nexpose Username
 
@@ -26,6 +26,6 @@ Password used to authenticate with Rapid7 Nexpose.
 
 ## Polarity
 
-Polarity is a memory-augmentation platform that improves and accelerates analyst decision making.  For more information about the Polarity platform please see:
+Polarity is a memory-augmentation platform that improves and accelerates analyst decision-making.  For more information about the Polarity platform please see:
 
 https://polarity.io/
