@@ -25,6 +25,7 @@ module.exports = {
   description:
     "Rapid7's on-premise option for vulnerability management software, monitors exposures in real-time",
   entityTypes: ['ipv4', 'cve', 'ipv6'],
+  defaultColor: 'light-pink',
   /**
    * An array of style files (css or less) that will be included for your integration. Any styles specified in
    * the below files can be used in your custom template.
