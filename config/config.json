@@ -1,0 +1,62 @@
+{
+  "name": "Rapid7 Nexpose",
+  "acronym": "NX",
+  "description": "Rapid7's on-premise option for vulnerability management software, monitors exposures in real-time",
+  "entityTypes": [
+    "IPv4",
+    "cve",
+    "IPv6"
+  ],
+  "defaultColor": "light-pink",
+  "styles": [
+    "./styles/nexpose.less"
+  ],
+  "block": {
+    "component": {
+      "file": "./components/nexpose-block.js"
+    },
+    "template": {
+      "file": "./templates/nexpose-block.hbs"
+    }
+  },
+  "request": {
+    "cert": "",
+    "key": "",
+    "passphrase": "",
+    "ca": "",
+    "proxy": "",
+    "rejectUnauthorized": true
+  },
+  "logging": {
+    "level": "info"
+  },
+  "options": [
+    {
+      "key": "url",
+      "name": "Rapid7 Nexpose URL",
+      "description": "URL to the Rapid7 Nexpose instance to use which should include the schema (i.e., https://, http://) and port if necessary.  This option should be set to \"Users can view only\"",
+      "default": "",
+      "type": "text",
+      "userCanEdit": false,
+      "adminOnly": false
+    },
+    {
+      "key": "username",
+      "name": "Username",
+      "description": "Username to authenticate with Rapid7 Nexpose.",
+      "default": "",
+      "type": "text",
+      "userCanEdit": false,
+      "adminOnly": true
+    },
+    {
+      "key": "password",
+      "name": "Password",
+      "description": "Password associated with the username.",
+      "default": "",
+      "type": "password",
+      "userCanEdit": false,
+      "adminOnly": true
+    }
+  ]
+}
