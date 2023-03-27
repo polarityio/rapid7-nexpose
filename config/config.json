@@ -1,4 +1,5 @@
 {
+  "polarityIntegrationUuid": "cde813c0-cce1-11ed-aeee-075d3490155d",
   "name": "Rapid7 Nexpose",
   "acronym": "NX",
   "description": "Rapid7's on-premise option for vulnerability management software, monitors exposures in real-time",
