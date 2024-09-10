@@ -6,6 +6,6 @@
   "author": "Polarity",
   "dependencies": {
     "postman-request": "^2.88.1-postman.31",
-    "async": "^3.2.4"
+    "async": "^3.2.6"
   }
 }
