@@ -2,7 +2,11 @@ let tagId = 2; // high is the first tag in the list, so we let it default
 
 polarity.export = PolarityComponent.extend({
   details: Ember.computed.alias('block.data.details'),
-
+  resources: Ember.computed.alias('details.resources'),
+  state: Ember.computed.alias('block._state'),
+  timezone: Ember.computed('Intl', function () {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }),
   tagsLink: Ember.computed('block.data.details', function () {
     return this.get('block.data.details')
       .links.filter(function (link) {
@@ -10,7 +14,22 @@ polarity.export = PolarityComponent.extend({
       })
       .pop();
   }),
+  init() {
+    this._super(...arguments);
+    if (!this.get('block._state')) {
+      this.set('block._state', []);
+      for (let i = 0; i < this.get('resources.length'); i++) {
+        this.set(`state.${i}`, {});
+      }
+    }
+    this.set('state.0.__show', true);
+    console.info(this.get('state'));
+  },
   actions: {
+    changeTab: function (tabName, assetIndex) {
+      console.info('changing tab to', tabName);
+      this.set(`state.${assetIndex}.__activeTab`, tabName);
+    },
     applyTag: function (assetId) {
       let self = this;
       let tagsLink = self.get('tagsLink');
