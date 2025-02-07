@@ -1,11 +1,11 @@
 {
   "name": "nexpose",
-  "version": "3.2.5",
+  "version": "3.3.0",
   "main": "./integration.js",
   "private": true,
   "author": "Polarity",
   "dependencies": {
     "postman-request": "^2.88.1-postman.40",
-    "async": "^3.2.5"
+    "async": "^3.2.6"
   }
 }

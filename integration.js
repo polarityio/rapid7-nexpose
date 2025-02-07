@@ -40,7 +40,7 @@ function getSummaryTags(resources, isCve) {
   } else if (resources.length === 1) {
     let resource = resources[0];
 
-    if(resource.ip && isCve){
+    if (resource.ip && isCve) {
       tags.push(resource.ip);
     }
 
@@ -122,11 +122,13 @@ function lookupCves(entities, options, callback) {
   );
 }
 
-function lookupIPs(entities, options, callback) {
+function lookupIPsAndHostnames(entities, options, callback) {
   let requestBody = {
     filters: entities.map((entity) => {
+      // Need to trim hostname which may have spaces around it
+      entity.value = entity.value.trim();
       return {
-        field: entity.type === 'cve' ? 'cve' : 'ip-address',
+        field: entity.types.includes('custom.hostname') ? 'host-name' : 'ip-address',
         operator: 'is',
         value: entity.value
       };
@@ -153,33 +155,66 @@ function lookupIPs(entities, options, callback) {
       return;
     }
 
-    let resourcesByIP = {};
+    Logger.trace({ body }, 'Asset Search HTTP Response');
 
+    let resourceLookupByIP = {};
+    let resourceLookupByHostname = {};
     body.resources.forEach((resource) => {
-      resourcesByIP[resource.ip] = resource;
+      if (resource.ip) {
+        if (!resourceLookupByIP[resource.ip]) {
+          resourceLookupByIP[resource.ip] = [];
+        }
+        resourceLookupByIP[resource.ip].push(resource);
+      }
+      if (resource.hostName) {
+        if (!resourceLookupByHostname[resource.hostName.toLowerCase()]) {
+          resourceLookupByHostname[resource.hostName.toLowerCase()] = [];
+        }
+        resourceLookupByHostname[resource.hostName.toLowerCase()].push(resource);
+      }
+      resource.__isAsset = true;
     });
 
     let results = [];
 
     entities.forEach((entity) => {
-      let resource = resourcesByIP[entity.value];
-      if (!!resource) {
-        resource.__isAsset = true;
+      let resourcesByIp = resourceLookupByIP[entity.value];
+      let resourcesByHostname = resourceLookupByHostname[entity.value.toLowerCase()];
+      if (!!resourcesByIp) {
         Logger.trace(
-          { resource: resource, entity: entity.value },
+          { resource: resourcesByIp, entity: entity.value },
           'Checking data before it gets passed'
         );
 
         results.push({
           entity: entity,
           data: {
-            summary: getSummaryTags(resource),
+            summary: getSummaryTags(resourcesByIp),
             details: {
-              resources: [resource]
+              resources: resourcesByIp
             }
           }
         });
-      } else {
+      }
+
+      if (!!resourcesByHostname) {
+        Logger.trace(
+          { resource: resourcesByHostname, entity: entity.value },
+          'Checking data before it gets passed'
+        );
+
+        results.push({
+          entity: entity,
+          data: {
+            summary: getSummaryTags(resourcesByHostname),
+            details: {
+              resources: resourcesByHostname
+            }
+          }
+        });
+      }
+
+      if (!resourcesByIp && !resourcesByHostname) {
         results.push({
           entity: entity,
           data: null
@@ -196,14 +231,16 @@ function doLookup(entities, options, callback) {
 
   let lookupResults = [];
 
-  const ipAddresses = entities.filter((entity) => entity.isIP);
+  const ipAddressesAndHostnames = entities.filter(
+    (entity) => entity.isIP || entity.types.includes('custom.hostname')
+  );
   const cves = entities.filter((entity) => entity.types.indexOf('cve') >= 0);
 
   async.parallel(
     {
       ipLookups: function (done) {
-        if (ipAddresses.length > 0) {
-          lookupIPs(ipAddresses, options, (err, _results) => {
+        if (ipAddressesAndHostnames.length > 0) {
+          lookupIPsAndHostnames(ipAddressesAndHostnames, options, (err, _results) => {
             lookupResults = lookupResults.concat(_results);
             done(err);
           });
@@ -264,7 +301,7 @@ function onDetails(resultObject, options, callback) {
             return;
           }
 
-          Logger.trace({body}, 'onDetails Response Body');
+          Logger.trace({ body }, 'onDetails Response Body');
 
           // There are four types of tags and they appear to be built-in
           resource.appliedTags = {
