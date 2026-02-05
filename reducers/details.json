@@ -1,0 +1,46 @@
+{
+  "root": {
+    "path": "",
+    "on_null": "return_empty"
+  },
+  "pipeline": [
+    {
+      "op": "copy",
+      "from": "resources[].riskScore",
+      "to": "reduced_results.resources_risk_scores"
+    },
+    {
+      "op": "copy",
+      "from": "resources[].vulnerabilities.critical",
+      "to": "reduced_results.resources_critical_vulns"
+    },
+    {
+      "op": "copy",
+      "from": "resources[].ip",
+      "to": "reduced_results.resources_ips"
+    },
+    {
+      "op": "copy",
+      "from": "resources[].hostName",
+      "to": "reduced_results.resources_hostnames"
+    },
+    {
+      "op": "copy",
+      "from": "resources[].os",
+      "to": "reduced_results.resources_os"
+    },
+    {
+      "op": "copy",
+      "from": "resources[].osFingerprint.cpe.vendor",
+      "to": "reduced_results.resources_cpe_vendors"
+    },
+    {
+      "op": "prune",
+      "strategy": "empty_values",
+      "target": "reduced_results"
+    }
+  ],
+  "output": {
+    "result": "$working.reduced_results"
+  }
+}

@@ -1,0 +1,393 @@
+{
+  "resources": [
+    {
+      "id": 1234567,
+      "ip": "192.168.1.100",
+      "hostName": "web-server-01.corp.example.com",
+      "mac": "00:1A:2B:3C:4D:5E",
+      "riskScore": 8572.35,
+      "os": "Microsoft Windows Server 2016 Standard",
+      "osFingerprint": {
+        "description": "Microsoft Windows Server 2016 Standard",
+        "family": "Windows",
+        "product": "Windows Server 2016",
+        "systemName": "Microsoft Windows",
+        "type": "General",
+        "vendor": "Microsoft",
+        "version": "2016",
+        "architecture": "x86_64",
+        "cpe": {
+          "edition": null,
+          "language": null,
+          "other": null,
+          "part": "o",
+          "product": "windows_server_2016",
+          "swEdition": null,
+          "targetHW": null,
+          "targetSW": null,
+          "update": null,
+          "v2.2": "cpe:/o:microsoft:windows_server_2016",
+          "v2.3": "cpe:2.3:o:microsoft:windows_server_2016:*:*:*:*:*:*:*:*",
+          "vendor": "microsoft",
+          "version": "*"
+        }
+      },
+      "vulnerabilities": {
+        "critical": 12,
+        "exploits": 8,
+        "malwareKits": 2,
+        "moderate": 34,
+        "severe": 21,
+        "total": 67
+      },
+      "assessedForPolicies": true,
+      "assessedForVulnerabilities": true,
+      "lastScanDate": "2024-01-15T14:23:45.123Z",
+      "lastScanId": 987654,
+      "services": [
+        {
+          "name": "HTTP",
+          "port": 80,
+          "protocol": "TCP",
+          "product": "Microsoft IIS httpd",
+          "version": "10.0"
+        },
+        {
+          "name": "HTTPS",
+          "port": 443,
+          "protocol": "TCP",
+          "product": "Microsoft IIS httpd",
+          "version": "10.0"
+        },
+        {
+          "name": "MS-SQL",
+          "port": 1433,
+          "protocol": "TCP",
+          "product": "Microsoft SQL Server",
+          "version": "2017"
+        }
+      ],
+      "history": [
+        {
+          "date": "2024-01-15T14:23:45.123Z",
+          "type": "SCAN",
+          "version": 1,
+          "scanId": 987654
+        },
+        {
+          "date": "2024-01-08T10:15:30.456Z",
+          "type": "SCAN",
+          "version": 1,
+          "scanId": 987600
+        }
+      ],
+      "software": [
+        {
+          "description": "Microsoft .NET Framework 4.8",
+          "family": null,
+          "product": ".NET Framework",
+          "type": "Application Server",
+          "vendor": "Microsoft",
+          "version": "4.8"
+        },
+        {
+          "description": "Apache Tomcat 9.0.45",
+          "family": null,
+          "product": "Tomcat",
+          "type": "Application Server",
+          "vendor": "Apache",
+          "version": "9.0.45"
+        }
+      ],
+      "appliedTags": {
+        "criticality": [
+          {
+            "id": 10,
+            "name": "Very High",
+            "type": "criticality",
+            "color": "red"
+          }
+        ],
+        "custom": [
+          {
+            "id": 25,
+            "name": "Production",
+            "type": "custom",
+            "color": "blue"
+          },
+          {
+            "id": 30,
+            "name": "PCI-DSS",
+            "type": "custom",
+            "color": "orange"
+          }
+        ],
+        "location": [
+          {
+            "id": 45,
+            "name": "US-East-Datacenter",
+            "type": "location"
+          }
+        ],
+        "owner": [
+          {
+            "id": 60,
+            "name": "IT-Security-Team",
+            "type": "owner"
+          }
+        ]
+      },
+      "__isAsset": true,
+      "_internal_scan_metadata": {
+        "scanner_id": "scanner-01",
+        "scan_template": "full-audit-without-web-spider",
+        "credential_status": "all-succeeded"
+      }
+    },
+    {
+      "id": 2345678,
+      "ip": "10.0.5.42",
+      "hostName": "database-server-prod.corp.example.com",
+      "mac": "00:50:56:A1:B2:C3",
+      "riskScore": 15234.78,
+      "os": "Ubuntu Linux 20.04",
+      "osFingerprint": {
+        "description": "Ubuntu Linux 20.04 LTS",
+        "family": "Linux",
+        "product": "Linux",
+        "systemName": "Ubuntu Linux",
+        "type": "General",
+        "vendor": "Ubuntu",
+        "version": "20.04",
+        "architecture": "x86_64",
+        "cpe": {
+          "edition": null,
+          "language": null,
+          "other": null,
+          "part": "o",
+          "product": "ubuntu_linux",
+          "swEdition": null,
+          "targetHW": null,
+          "targetSW": null,
+          "update": null,
+          "v2.2": "cpe:/o:canonical:ubuntu_linux:20.04",
+          "v2.3": "cpe:2.3:o:canonical:ubuntu_linux:20.04:*:*:*:lts:*:*:*",
+          "vendor": "canonical",
+          "version": "20.04"
+        }
+      },
+      "vulnerabilities": {
+        "critical": 28,
+        "exploits": 15,
+        "malwareKits": 5,
+        "moderate": 89,
+        "severe": 43,
+        "total": 160
+      },
+      "assessedForPolicies": true,
+      "assessedForVulnerabilities": true,
+      "lastScanDate": "2024-01-14T22:10:15.789Z",
+      "lastScanId": 987620,
+      "services": [
+        {
+          "name": "SSH",
+          "port": 22,
+          "protocol": "TCP",
+          "product": "OpenSSH",
+          "version": "8.2p1"
+        },
+        {
+          "name": "PostgreSQL",
+          "port": 5432,
+          "protocol": "TCP",
+          "product": "PostgreSQL",
+          "version": "13.5"
+        }
+      ],
+      "history": [
+        {
+          "date": "2024-01-14T22:10:15.789Z",
+          "type": "SCAN",
+          "version": 1,
+          "scanId": 987620
+        }
+      ],
+      "software": [
+        {
+          "description": "PostgreSQL Database Server 13.5",
+          "family": null,
+          "product": "PostgreSQL",
+          "type": "Database",
+          "vendor": "PostgreSQL Global Development Group",
+          "version": "13.5"
+        }
+      ],
+      "appliedTags": {
+        "criticality": [
+          {
+            "id": 11,
+            "name": "Critical",
+            "type": "criticality",
+            "color": "dark-red"
+          }
+        ],
+        "custom": [
+          {
+            "id": 25,
+            "name": "Production",
+            "type": "custom",
+            "color": "blue"
+          },
+          {
+            "id": 35,
+            "name": "Database-Server",
+            "type": "custom",
+            "color": "purple"
+          }
+        ],
+        "location": [
+          {
+            "id": 46,
+            "name": "US-West-Datacenter",
+            "type": "location"
+          }
+        ],
+        "owner": [
+          {
+            "id": 62,
+            "name": "Database-Admin-Team",
+            "type": "owner"
+          }
+        ]
+      },
+      "__isAsset": true,
+      "_internal_scan_metadata": {
+        "scanner_id": "scanner-03",
+        "scan_template": "linux-discovery-scan",
+        "credential_status": "partial-success"
+      }
+    },
+    {
+      "id": 3456789,
+      "ip": "172.16.20.88",
+      "mac": "A4:5E:60:C1:D2:E3",
+      "riskScore": 3421.12,
+      "os": "Cisco IOS",
+      "osFingerprint": {
+        "description": "Cisco IOS 15.2",
+        "family": "IOS",
+        "product": "IOS",
+        "systemName": "Cisco IOS",
+        "type": "Router",
+        "vendor": "Cisco",
+        "version": "15.2",
+        "cpe": {
+          "edition": null,
+          "language": null,
+          "other": null,
+          "part": "o",
+          "product": "ios",
+          "swEdition": null,
+          "targetHW": null,
+          "targetSW": null,
+          "update": null,
+          "v2.2": "cpe:/o:cisco:ios:15.2",
+          "v2.3": "cpe:2.3:o:cisco:ios:15.2:*:*:*:*:*:*:*",
+          "vendor": "cisco",
+          "version": "15.2"
+        }
+      },
+      "vulnerabilities": {
+        "critical": 3,
+        "exploits": 1,
+        "malwareKits": 0,
+        "moderate": 12,
+        "severe": 7,
+        "total": 22
+      },
+      "assessedForPolicies": false,
+      "assessedForVulnerabilities": true,
+      "lastScanDate": "2024-01-16T03:45:22.555Z",
+      "lastScanId": 987700,
+      "services": [
+        {
+          "name": "Telnet",
+          "port": 23,
+          "protocol": "TCP"
+        },
+        {
+          "name": "SSH",
+          "port": 22,
+          "protocol": "TCP",
+          "product": "Cisco SSH",
+          "version": "2.0"
+        }
+      ],
+      "history": [
+        {
+          "date": "2024-01-16T03:45:22.555Z",
+          "type": "SCAN",
+          "version": 1,
+          "scanId": 987700
+        }
+      ],
+      "software": [],
+      "appliedTags": {
+        "criticality": [],
+        "custom": [
+          {
+            "id": 40,
+            "name": "Network-Infrastructure",
+            "type": "custom",
+            "color": "green"
+          }
+        ],
+        "location": [
+          {
+            "id": 47,
+            "name": "Branch-Office-Seattle",
+            "type": "location"
+          }
+        ],
+        "owner": [
+          {
+            "id": 65,
+            "name": "Network-Operations",
+            "type": "owner"
+          }
+        ]
+      },
+      "__isAsset": true,
+      "_internal_scan_metadata": {
+        "scanner_id": "scanner-02",
+        "scan_template": "network-device-discovery",
+        "credential_status": "failed"
+      }
+    }
+  ],
+  "availableTags": [
+    {
+      "id": 10,
+      "name": "Very High",
+      "type": "criticality",
+      "color": "red"
+    },
+    {
+      "id": 11,
+      "name": "Critical",
+      "type": "criticality",
+      "color": "dark-red"
+    },
+    {
+      "id": 12,
+      "name": "High",
+      "type": "criticality",
+      "color": "orange"
+    }
+  ],
+  "_metadata": {
+    "total_resources": 3,
+    "query_time_ms": 245,
+    "api_version": "3"
+  }
+}

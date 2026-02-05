@@ -3,20 +3,31 @@
   "name": "Rapid7 Nexpose",
   "acronym": "NX",
   "description": "Search assets by IP, CVE, or hostname",
-  "dataTypes": ["IPv4", "IPv6", "cve", {
-    "type": "custom",
-    "name": "Hostname",
-    "regex": "^\\s*([a-zA-Z-_0-9]{5,25})\\s*$",
-    "key": "hostname",
-    "description": "Matches on possible Asset Hostname lookups which can be a single search term between 5 and 25 characters using A-Z, 0-9, dashes, and underscores.",
-    "enabled": false,
-    "editable": true,
-    "isCaseSensitive": false,
-    "isGlobal": true
-  }],
-  "entityTypes": ["IPv4", "cve", "IPv6"],
+  "dataTypes": [
+    "IPv4",
+    "IPv6",
+    "cve",
+    {
+      "type": "custom",
+      "name": "Hostname",
+      "regex": "^\\s*([a-zA-Z-_0-9]{5,25})\\s*$",
+      "key": "hostname",
+      "description": "Matches on possible Asset Hostname lookups which can be a single search term between 5 and 25 characters using A-Z, 0-9, dashes, and underscores.",
+      "enabled": false,
+      "editable": true,
+      "isCaseSensitive": false,
+      "isGlobal": true
+    }
+  ],
+  "entityTypes": [
+    "IPv4",
+    "cve",
+    "IPv6"
+  ],
   "defaultColor": "light-pink",
-  "styles": ["./styles/nexpose.less"],
+  "styles": [
+    "./styles/nexpose.less"
+  ],
   "block": {
     "component": {
       "file": "./components/nexpose-block.js"
@@ -56,5 +67,10 @@
       "userCanEdit": false,
       "adminOnly": true
     }
-  ]
+  ],
+  "reducer": {
+    "details": {
+      "file": "./reducers/details.json"
+    }
+  }
 }
